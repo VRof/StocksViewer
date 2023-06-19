@@ -22,7 +22,7 @@ public class StockSearchAdapter extends ArrayAdapter<StockMetadata> implements F
     private List<StockMetadata> originalData;
     private List<StockMetadata> filteredData;
 
-    private int MAX_RESULTS = 50;
+    private int MAX_RESULTS = 200;
 
     public StockSearchAdapter(Context context, int resourceId, List<StockMetadata> data) {
         super(context, resourceId);

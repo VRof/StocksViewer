@@ -250,7 +250,12 @@ public class MainActivity extends AppCompatActivity {
                         // Update the stock price in the selectedStocksList
                         StockPriceRealTime stock = selectedStocksList.get(position);
                         stock.setPrice(price);
-                        stock.setDailyChange(((price - stock.getClose())/stock.getClose())*100);
+                        double dailychange = ((price - stock.getClose())/stock.getClose())*100;
+                        if(Double.isNaN(dailychange)){ //if close price fetch is failed before
+                            fetchStockClosePrice(symbol,position);
+                            dailychange = ((price - stock.getClose())/stock.getClose())*100;
+                        }
+                        stock.setDailyChange(dailychange);
                         watchListAdapter.notifyItemChanged(position);
                         Log.d("api", "Stock price update success: " + symbol);
                     }

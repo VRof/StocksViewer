@@ -1,6 +1,7 @@
 package com.example.stockviewer_v2.UIHelpers;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.stockviewer_v2.MainActivity;
 import com.example.stockviewer_v2.R;
+import com.example.stockviewer_v2.graph.GraphActivity;
 import com.example.stockviewer_v2.watchList.FileWriterReaderSingleton;
 import com.example.stockviewer_v2.watchList.StockPriceRealTime;
 
@@ -59,6 +61,16 @@ public class UIWatchListAdapter extends RecyclerView.Adapter<UIWatchListViewHold
                     FileWriterReaderSingleton writer =  FileWriterReaderSingleton.getInstance();
                     writer.saveWatchListToFile(context,items);
                     //
+                }
+            }
+        });
+        holder.getConstraintLayout().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int currentPosition = holder.getAdapterPosition();
+                if (currentPosition != RecyclerView.NO_POSITION) {
+                    Intent intent = new Intent(holder.itemView.getContext(), GraphActivity.class);
+                    context.startActivity(intent);
                 }
             }
         });

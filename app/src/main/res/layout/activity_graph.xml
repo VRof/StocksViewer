@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/butt_1d"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="1D"
+            android:textSize="12sp"/>
+
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/butt_5d"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="5D"
+            android:textSize="12sp"/>
+
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/butt_1m"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="1M"
+            android:textSize="12sp"/>
+
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/butt_6m"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="6M"
+            android:textSize="12sp"/>
+
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/butt_ytd"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="YTD"
+            android:textSize="12sp"/>
+
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/butt_1y"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="1Y"
+            android:textSize="12sp"/>
+
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/butt_5y"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="5Y"
+            android:textSize="12sp"/>
+
+
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/butt_max"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Max"
+            android:textSize="12sp"/>
+
+    </LinearLayout>
+
+
+    <com.github.mikephil.charting.charts.LineChart
+        android:id="@+id/chart"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="5dp"
+        android:layout_weight="1" />
+
+</LinearLayout>

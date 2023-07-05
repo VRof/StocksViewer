@@ -80,5 +80,9 @@ public class StockHistoryData {
     public List<PriceData> getValues() {
         return values;
     }
+
+    public void setValues(List<PriceData> values) {
+        this.values = values;
+    }
 }
 

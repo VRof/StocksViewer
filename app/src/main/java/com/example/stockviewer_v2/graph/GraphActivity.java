@@ -5,10 +5,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.stockviewer_v2.ApiControllerSingleton;
 import com.example.stockviewer_v2.BuildConfig;
 import com.example.stockviewer_v2.R;
 import com.github.mikephil.charting.charts.LineChart;
@@ -28,8 +30,6 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class GraphActivity extends AppCompatActivity {
     private String symbol;
@@ -37,6 +37,13 @@ public class GraphActivity extends AppCompatActivity {
     private Button butt_1d, butt_5d, butt_1m, butt_6m, butt_ytd, butt_1y, butt_5y, butt_max;
     LineData lineData;
     LineDataSet dataSet;
+
+    StockHistoryData historyData_1d_interval;
+
+    StockHistoryData historyData_1month_interval;
+
+    StockHistoryData historyData_1h_interval;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,7 +53,56 @@ public class GraphActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             init_button_listeners();
         }
+        historyData_1h_interval = new StockHistoryData();
+        historyData_1h_interval.setValues(new ArrayList<>());
         getDataFor1D();
+        //max is 5y, ~8 days in month market is closed
+        getHistoryData_1d_interval(5*(365 - 8*12));
+        //max is 500 month, ~1984
+        getHistoryData_1m_interval(500);
+    }
+
+    private void getHistoryData_1m_interval(int maxResults) {
+        fetchDataAsync("1month", maxResults, new Callback<StockHistoryData>() {
+            @Override
+            public void onResponse(Call<StockHistoryData> call, Response<StockHistoryData> response) {
+                if (response.isSuccessful()) {
+                    historyData_1month_interval = response.body();
+//                    if (historyData_1month_interval != null) {
+//
+//                    }
+                } else {
+                    Log.e("API Error", "Request failed with error code: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<StockHistoryData> call, Throwable t) {
+                Log.e("API Error", "Request failed: " + t.getMessage());
+            }
+        });
+    }
+
+    private void getHistoryData_1d_interval(int maxResults) {
+        fetchDataAsync("1day", maxResults, new Callback<StockHistoryData>() {
+            @Override
+            public void onResponse(Call<StockHistoryData> call, Response<StockHistoryData> response) {
+                if (response.isSuccessful()) {
+                    historyData_1d_interval = response.body();
+//                    if (historyData_1d_interval != null) {
+//
+//                    }
+                } else {
+                    Log.e("API Error", "Request failed with error code: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<StockHistoryData> call, Throwable t) {
+                Log.e("API Error", "Request failed: " + t.getMessage());
+            }
+        });
+
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -60,20 +116,34 @@ public class GraphActivity extends AppCompatActivity {
         butt_5y = findViewById(R.id.butt_5y);
         butt_max = findViewById(R.id.butt_max);
 
+        //YTD calculations:
+        // Get the current date
+        LocalDate currentDate = LocalDate.now();
+        // Get the number of days from the beginning of the year to the current month - ~ 8 days when market is closed in month
+        int daysFromBeginning = currentDate.getDayOfYear()-8*currentDate.getMonthValue();
         //assuming there is ~8 days in month when market is closed
+
         butt_1d.setOnClickListener(v -> getDataFor1D());
-        butt_5d.setOnClickListener(v -> getDataInterval1D(5));
-        butt_1m.setOnClickListener(v -> getDataInterval1D(30 - 8));
-        butt_6m.setOnClickListener(v -> getDataInterval1D(180-6*8));
-        butt_ytd.setOnClickListener(v -> getDataForYTD());
-        butt_1y.setOnClickListener(v -> getDataInterval1D(365 - 8*12));
-        butt_5y.setOnClickListener(v -> getDataInterval1D(5*(365 - 8*12)));
-        butt_max.setOnClickListener(v -> getDataForMAX());
+        butt_5d.setOnClickListener(v -> showChart(convertDataToEntries(historyData_1h_interval,5,"1day")));
+        butt_1m.setOnClickListener(v -> showChart(convertDataToEntries(historyData_1d_interval,30-8,"1day")));
+        butt_6m.setOnClickListener(v -> showChart(convertDataToEntries(historyData_1d_interval,180-6*8,"1day")));
+        butt_ytd.setOnClickListener(v -> showChart(convertDataToEntries(historyData_1d_interval,daysFromBeginning,"1day")));
+        butt_1y.setOnClickListener(v -> showChart(convertDataToEntries(historyData_1d_interval,365-12*8,"1day")));
+        butt_5y.setOnClickListener(v -> showChart(convertDataToEntries(historyData_1d_interval,5*(365 -12*8),"1day")));
+        butt_max.setOnClickListener(v -> showChart(convertDataToEntries(historyData_1month_interval,500,"1month")));
     }
 
     private void showChart(List<Entry> entries) {
-       // lineChart.getXAxis().setLabelCount(entries.size());
-
+        if(entries.isEmpty()){
+            Toast.makeText(this, "max api requests per minute, try again later", Toast.LENGTH_SHORT).show();
+            if(historyData_1h_interval.getValues()==null || historyData_1h_interval.getValues().isEmpty())
+                getDataFor1D();
+            else if(historyData_1d_interval.getValues()==null || historyData_1d_interval.getValues().isEmpty())
+                getHistoryData_1d_interval(5*(365 - 8*12));
+            else if(historyData_1month_interval.getValues()==null || historyData_1month_interval.getValues().isEmpty())
+                getHistoryData_1m_interval(500);
+            return;
+        }
         dataSet = new LineDataSet(entries, symbol);
         lineChart.setAutoScaleMinMaxEnabled(false);
         lineChart.setBackgroundColor(Color.LTGRAY);
@@ -122,81 +192,27 @@ public class GraphActivity extends AppCompatActivity {
     }
 
     public void fetchDataAsync(String interval, int maxResults, Callback<StockHistoryData> callback) {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://api.twelvedata.com/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        HistoryStockDataApiService historyStockDataApiService = retrofit.create(HistoryStockDataApiService.class);
-
+        HistoryStockDataApiService historyStockDataApiService = ApiControllerSingleton.getInstance().getRetrofit().create(HistoryStockDataApiService.class);
         Call<StockHistoryData> call = historyStockDataApiService.getStockHistoryData(symbol, interval, maxResults, BuildConfig.API_KEY);
         call.enqueue(callback);
     }
 
     private void getDataFor1D() {
+        if(historyData_1h_interval.getValues() !=null && !historyData_1h_interval.getValues().isEmpty()) //restore if saved
+            showChart(convertDataToEntries(historyData_1h_interval,7,"1h"));
         int maxResults = 7;
         fetchDataAsync("1h", maxResults, new Callback<StockHistoryData>() {
             @Override
             public void onResponse(Call<StockHistoryData> call, Response<StockHistoryData> response) {
                 if (response.isSuccessful()) {
-                    StockHistoryData historyData = response.body();
-                    if (historyData != null) {
-                        lineChart.getXAxis().setValueFormatter(new ValueFormatter() {
-                            @Override
-                            public String getAxisLabel(float value, AxisBase axis) {
-                                int index = (int) value;
-                            if (index >= 0 && index <= historyData.getValues().size()) {
-                                return  (index + 8) + ":30";
-                            }
-                            return "";
-                            }
-                        });
-                        showChart(convertDataToEntries(historyData,maxResults));
+                    historyData_1h_interval = response.body();
+                    if (historyData_1h_interval != null) {
+                        showChart(convertDataToEntries(historyData_1h_interval,maxResults,"1h"));
                     }
                 } else {
                     Log.e("API Error", "Request failed with error code: " + response.code());
                 }
             }
-
-            @Override
-            public void onFailure(Call<StockHistoryData> call, Throwable t) {
-                Log.e("API Error", "Request failed: " + t.getMessage());
-            }
-        });
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    void getDataForYTD(){
-        // Get the current date
-        LocalDate currentDate = LocalDate.now();
-
-        // Get the number of days from the beginning of the year to the current month - ~ 8 days when market is closed in month
-        int maxResults = currentDate.getDayOfYear()-8*currentDate.getMonthValue();
-        fetchDataAsync("1day", maxResults, new Callback<StockHistoryData>() {
-            @Override
-            public void onResponse(Call<StockHistoryData> call, Response<StockHistoryData> response) {
-                if (response.isSuccessful()) {
-                    StockHistoryData historyData = response.body();
-                    if (historyData != null) {
-                        lineChart.getXAxis().setValueFormatter(new ValueFormatter() {
-                            @Override
-                            public String getAxisLabel(float value, AxisBase axis) {
-                                int i = Math.round(value) ;
-                                int listSize = historyData.getValues().size();
-                                if (i > 0 && i <= listSize) {
-                                    String date = historyData.getValues().get(listSize - i).getDatetime();
-                                    return date;
-                                }
-                                return "";
-                            }
-                        });
-
-                        showChart(convertDataToEntries(historyData, maxResults));
-                    }
-                } else {
-                    Log.e("API Error", "Request failed with error code: " + response.code());
-                }
-            }
-
             @Override
             public void onFailure(Call<StockHistoryData> call, Throwable t) {
                 Log.e("API Error", "Request failed: " + t.getMessage());
@@ -205,79 +221,34 @@ public class GraphActivity extends AppCompatActivity {
     }
 
 
-    private void getDataForMAX(){
-        int maxResults = 500;
-        fetchDataAsync("1month", maxResults, new Callback<StockHistoryData>() {
-            @Override
-            public void onResponse(Call<StockHistoryData> call, Response<StockHistoryData> response) {
-                if (response.isSuccessful()) {
-                    StockHistoryData historyData = response.body();
-                    if (historyData != null) {
-                        lineChart.getXAxis().setValueFormatter(new ValueFormatter() {
-                            @Override
-                            public String getAxisLabel(float value, AxisBase axis) {
-                                int i = Math.round(value) ;
-                                int listSize = historyData.getValues().size();
-                                listSize = Math.min(listSize,maxResults);
-                                if (i > 0 && i <= listSize) {
-                                    String date = historyData.getValues().get(listSize - i).getDatetime();
-                                    return date;
-                                }
-                                return "";
-                            }
-                        });
-
-                        showChart(convertDataToEntries(historyData, historyData.getValues().size()));
+    private List<Entry> convertDataToEntries(StockHistoryData historyData, int numOfPoints, String interval) {
+        if(historyData.getValues()==null || historyData.getValues().isEmpty()){ //api failed, don't show
+            return new ArrayList<Entry>();
+        }
+        if(interval.equalsIgnoreCase("1day") || interval.equalsIgnoreCase("1month")){
+            lineChart.getXAxis().setValueFormatter(new ValueFormatter() {
+                @Override
+                public String getAxisLabel(float value, AxisBase axis) {
+                    int i = Math.round(value) ;
+                    int listSize = historyData_1month_interval.getValues().size();
+                    listSize = Math.min(listSize,numOfPoints);
+                    if (i > 0 && i <= listSize) {
+                        String date = historyData_1month_interval.getValues().get(listSize - i).getDatetime();
+                        return date;
                     }
-                } else {
-                    Log.e("API Error", "Request failed with error code: " + response.code());
+                    return "";
                 }
-            }
-
-            @Override
-            public void onFailure(Call<StockHistoryData> call, Throwable t) {
-                Log.e("API Error", "Request failed: " + t.getMessage());
-            }
-        });
-    }
-
-    private void getDataInterval1D(int numOfDays){
-        int maxResults = numOfDays;
-        fetchDataAsync("1day", maxResults, new Callback<StockHistoryData>() {
-            @Override
-            public void onResponse(Call<StockHistoryData> call, Response<StockHistoryData> response) {
-                if (response.isSuccessful()) {
-                    StockHistoryData historyData = response.body();
-                    if (historyData != null) {
-                        lineChart.getXAxis().setValueFormatter(new ValueFormatter() {
-                            @Override
-                            public String getAxisLabel(float value, AxisBase axis) {
-                                int i = Math.round(value) ;
-                                int listSize = historyData.getValues().size();
-                                if (i > 0 && i <= listSize) {
-                                    String date = historyData.getValues().get(listSize - i).getDatetime();
-                                    return date;
-                                }
-                                return "";
-                            }
-                        });
-
-                        showChart(convertDataToEntries(historyData, maxResults));
-                    }
-                } else {
-                    Log.e("API Error", "Request failed with error code: " + response.code());
+            });
+        }else if(interval.equalsIgnoreCase("1h")){
+            lineChart.getXAxis().setValueFormatter(new ValueFormatter() {
+                @Override
+                public String getAxisLabel(float value, AxisBase axis) {
+                    int i= (int)(value);
+                    return "" + (8+i) + ":30"; //9:30, 10:30 ...
                 }
-            }
-
-            @Override
-            public void onFailure(Call<StockHistoryData> call, Throwable t) {
-                Log.e("API Error", "Request failed: " + t.getMessage());
-            }
-        });
-    }
-    private List<Entry> convertDataToEntries(StockHistoryData historyData, int numOfPoints) {
+            });
+        }
         List<Entry> entries = new ArrayList<>();
-
         for (int i = 0; i < numOfPoints; i++) {
             float closePrice = Float.parseFloat(historyData.getValues().get(numOfPoints - i - 1).getClose());
             entries.add(new Entry(i + 1, closePrice));

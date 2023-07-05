@@ -184,12 +184,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Call api to fetch stocks metadata for searchbar
     private void fetchAllStocksMetadataForSearchBar() {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://api.twelvedata.com/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        StockMetadataApiService stockApiService = retrofit.create(StockMetadataApiService.class);
-
+        StockMetadataApiService stockApiService = ApiControllerSingleton.getInstance().getRetrofit().create(StockMetadataApiService.class);
         String stockType = "Common Stock";
         String country = "United States";
         String apiKey = BuildConfig.API_KEY;
@@ -231,11 +226,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     private void fetchStockPrice(String symbol, int position) {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://api.twelvedata.com/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        StockPriceTickerApiService stockPriceApiService = retrofit.create(StockPriceTickerApiService.class);
+        StockPriceTickerApiService stockPriceApiService = ApiControllerSingleton.getInstance().getRetrofit().create(StockPriceTickerApiService.class);
 
         String apiKey = BuildConfig.API_KEY;
 
@@ -251,7 +242,7 @@ public class MainActivity extends AppCompatActivity {
                         StockPriceRealTime stock = selectedStocksList.get(position);
                         stock.setPrice(price);
                         double dailychange = ((price - stock.getClose())/stock.getClose())*100;
-                        if(Double.isNaN(dailychange)){ //if close price fetch is failed before
+                        if(Double.isNaN(dailychange) || Double.isInfinite(dailychange)){ //if close price fetch is failed before
                             fetchStockClosePrice(symbol,position);
                             dailychange = ((price - stock.getClose())/stock.getClose())*100;
                         }
@@ -280,11 +271,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     private void fetchStockClosePrice(String symbol,  int position) {
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("https://api.twelvedata.com/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        ClosePriceForDailyChangeApiService closePriceApiService = retrofit.create(ClosePriceForDailyChangeApiService.class);
+        ClosePriceForDailyChangeApiService closePriceApiService = ApiControllerSingleton.getInstance().getRetrofit().create(ClosePriceForDailyChangeApiService.class);
 
         String apiKey = BuildConfig.API_KEY;
 

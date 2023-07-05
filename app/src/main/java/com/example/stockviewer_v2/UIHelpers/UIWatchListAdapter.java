@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -47,7 +48,7 @@ public class UIWatchListAdapter extends RecyclerView.Adapter<UIWatchListViewHold
         }
         holder.getDailyChange().setText(dailyChangeStr);
 
-        holder.getPrice().setText(Double.toString(item.getPrice()));
+        holder.getPrice().setText(String.format("%.2f$", item.getPrice()));
         holder.getSymbol().setText(item.getSymbol());
 
         holder.getRemoveButton().setOnClickListener(new View.OnClickListener() {
@@ -70,6 +71,8 @@ public class UIWatchListAdapter extends RecyclerView.Adapter<UIWatchListViewHold
                 int currentPosition = holder.getAdapterPosition();
                 if (currentPosition != RecyclerView.NO_POSITION) {
                     Intent intent = new Intent(holder.itemView.getContext(), GraphActivity.class);
+                    TextView symbol = v.findViewById(R.id.symbol);
+                    intent.putExtra("symbol", symbol.getText().toString());
                     context.startActivity(intent);
                 }
             }

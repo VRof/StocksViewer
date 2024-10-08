@@ -1,5 +1,4 @@
 # Stocks viewer android app
-This is college project don't take it seriously.
 You can search, add stocks to watchlist and check price history graphs.
 Due to free api limitations this app is limited in number of actions per minute, it can be changed by changing api key in buid.gradle file.
 

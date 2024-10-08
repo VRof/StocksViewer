@@ -1,6 +1,12 @@
-# Stocks viewer android app
-You can search, add stocks to watchlist and check price history graphs.
-Due to free api limitations this app is limited in number of actions per minute, it can be changed by changing api key in buid.gradle file.
+# Stocks Viewer Android App
+
+The **Stocks Viewer** app allows you to:
+- Search for stocks
+- Add stocks to your watchlist
+- View price history through interactive graphs
+
+### API Limitations
+Due to the limitations of the free stock market API, the app is restricted in terms of the number of actions allowed per minute. You can change this limit by updating the API key in the `build.gradle` file.
 
 
 ![image](https://github.com/VRof/StocksViewer/assets/101021359/244583af-bd66-4d15-8718-da7d8f7544bd) ![image](https://github.com/VRof/StocksViewer/assets/101021359/124c6e93-dec5-4539-b377-efb86b805dd4)
